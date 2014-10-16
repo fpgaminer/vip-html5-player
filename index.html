@@ -1,0 +1,156 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script>
+	var g_playlist = null;
+
+	function parsePlaylist (playlistXML) {
+		// roster.xml from VIP is currently broken (2014.10.15); this fixes it before parsing
+		playlistXML = playlistXML.replace (/&/g, '&amp;');
+
+		playlistXML = $.parseXML (playlistXML);
+		
+
+		result = [];
+
+		$(playlistXML).find ('playlist trackList > track').each (function () {
+			track = {
+				creator: $(this).find ('creator').text (),
+				title: $(this).find ('title').text (),
+				location: $(this).find ('location').text ()
+			};
+
+			result.push (track);
+		});
+
+		return result;
+	}
+
+	function playNextTrack () {
+		var trackid = Math.floor (Math.random () * g_playlist.length);
+
+		playTrack (trackid);
+	}
+
+
+	function playTrack (trackid) {
+		var track = g_playlist[trackid];
+
+		$('#tracks-table tr').removeClass ('selected');
+		var trackelem = $('#tracks-table tr').eq (trackid);
+		trackelem.addClass ('selected');
+
+		$('audio').attr ('src', track.location);
+		$('audio').trigger ('play');
+
+		$('html, body').animate ({
+			scrollTop: trackelem.offset ().top
+		}, 1000);
+	}
+
+	// Grab track listing from the amazing aersia
+	$.getJSON ('http://whateverorigin.org/get?url=' + encodeURIComponent ('http://vip.aersia.net/roster.xml') + '&callback=?', function (data) {
+		// Parse track list
+		g_playlist = parsePlaylist (data.contents);
+
+		// Build HTML table for track listing
+		for (var i = 0; i < g_playlist.length; ++i) {
+			var track = g_playlist[i];
+
+			var row = $('<tr>').append (
+				$('<td>').text (track.creator + ' - ' + track.title)
+			);
+			
+			row.appendTo ('#tracks-table');
+			(function (i) {
+				row.click (function () {
+					playTrack (i);
+				});
+			}) (i);
+		}
+
+		// Begin playing random tracks
+		playNextTrack ();
+	});
+</script>
+
+<style>
+	html, body, div, span, applet, object, iframe,
+	h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+	a, abbr, acronym, address, big, cite, code,
+	del, dfn, em, img, ins, kbd, q, s, samp,
+	small, strike, strong, sub, sup, tt, var,
+	b, u, i, center,
+	dl, dt, dd, ol, ul, li,
+	fieldset, form, label, legend,
+	table, caption, tbody, tfoot, thead, tr, th, td,
+	article, aside, canvas, details, embed, 
+	figure, figcaption, footer, header, hgroup, 
+	menu, nav, output, ruby, section, summary,
+	time, mark, audio, video {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		font-size: 100%;
+		font: inherit;
+		vertical-align: baseline;
+	}
+	/* HTML5 display-role reset for older browsers */
+	article, aside, details, figcaption, figure, 
+	footer, header, hgroup, menu, nav, section {
+		display: block;
+	}
+	body {
+		line-height: 1;
+	}
+	ol, ul {
+		list-style: none;
+	}
+	blockquote, q {
+		quotes: none;
+	}
+	blockquote:before, blockquote:after,
+	q:before, q:after {
+		content: '';
+		content: none;
+	}
+	table {
+		border-collapse: collapse;
+		border-spacing: 0;
+	}
+
+	table {
+		width: 100%;
+	}
+
+	table td {
+		background-color: #183c63;
+		border: 1px solid #003366;
+		color: #FF9148;
+		padding: 5px;
+		font-family: Helvetica, Arial, sans-serif;
+		font-size: 8pt;
+		cursor: pointer;
+	}
+
+	table tr.selected td {
+		background-color: #e5874a;
+		color: #183c63;
+	}
+
+	table tr:hover td {
+		background-color: #4e91ff;
+		color: #183c63;
+	}
+</style>
+</head>
+<body>
+
+<audio controls onended="playNextTrack ();"></audio>
+
+<table id='tracks-table' cellpadding="0" cellspacing="0">
+</table>
+
+</body>
+</html>

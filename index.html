@@ -1,9 +1,28 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script>
 	var g_playlist = null;
+	var g_previous = [];
+	var g_previous_idx = 0;
+	var MAX_HISTORY = 10;
+
+	function formatTimecode (seconds) {
+		seconds = Math.floor (seconds);
+		minutes = Math.floor (seconds / 60);
+		seconds = seconds - (minutes * 60);
+		minutes = "" + minutes;
+		seconds = "" + seconds;
+
+		if (minutes.length == 1)
+			minutes = "0" + minutes;
+		if (seconds.length == 1)
+			seconds = "0" + seconds;
+
+		return minutes + ":" + seconds;
+	}
 
 	function parsePlaylist (playlistXML) {
 		// roster.xml from VIP is currently broken (2014.10.15); this fixes it before parsing
@@ -27,10 +46,36 @@
 		return result;
 	}
 
-	function playNextTrack () {
-		var trackid = Math.floor (Math.random () * g_playlist.length);
+	function playPreviousTrack () {
+		if (g_playlist === null)
+			return;
 
-		playTrack (trackid);
+		if (g_previous_idx <= 0)
+			g_previous_idx = 0;
+		else
+			g_previous_idx -= 1;
+
+		playTrack (g_previous[g_previous_idx]);
+	}
+
+	function playNextTrack () {
+		if (g_playlist === null)
+			return;
+
+		if (g_previous_idx >= (g_previous.length - 1)) {
+			g_previous.push (Math.floor (Math.random () * g_playlist.length));
+			g_previous_idx = g_previous.length - 1;
+		}
+		else {
+			g_previous_idx += 1;
+		}
+
+		while (g_previous.length > MAX_HISTORY) {
+			g_previous.shift ();
+			g_previous_idx -= 1;
+		}
+
+		playTrack (g_previous[g_previous_idx]);
 	}
 
 
@@ -44,34 +89,90 @@
 		$('audio').attr ('src', track.location);
 		$('audio').trigger ('play');
 
-		$('html, body').animate ({
-			scrollTop: trackelem.offset ().top
+		$('html, body').stop ().animate ({
+			scrollTop: trackelem.offset ().top - $('.control-bar').height ()
 		}, 1000);
 	}
 
-	// Grab track listing from the amazing aersia
-	$.getJSON ('http://whateverorigin.org/get?url=' + encodeURIComponent ('http://vip.aersia.net/roster.xml') + '&callback=?', function (data) {
-		// Parse track list
-		g_playlist = parsePlaylist (data.contents);
+	function loadNewPlaylist () {
+		var playlistURL = $('#select-playlist').val ();
 
-		// Build HTML table for track listing
-		for (var i = 0; i < g_playlist.length; ++i) {
-			var track = g_playlist[i];
+		// Clear
+		$('#tracks-table tr').remove ();
+		g_previous = [];
+		g_previous_idx = 0;
+		g_playlist = null;
 
-			var row = $('<tr>').append (
-				$('<td>').text (track.creator + ' - ' + track.title)
-			);
+		$.getJSON ('http://whateverorigin.org/get?url=' + encodeURIComponent (playlistURL) + '&callback=?', function (data) {
+			// Parse track list
+			g_playlist = parsePlaylist (data.contents);
+
+			// Build HTML table for track listing
+			for (var i = 0; i < g_playlist.length; ++i) {
+				var track = g_playlist[i];
+
+				var row = $('<tr>').append (
+					$('<td>').text (track.creator + ' - ' + track.title)
+				);
 			
-			row.appendTo ('#tracks-table');
-			(function (i) {
-				row.click (function () {
-					playTrack (i);
-				});
-			}) (i);
-		}
+				row.appendTo ('#tracks-table');
+				(function (i) {
+					row.click (function () {
+						playTrack (i);
+					});
+				}) (i);
+			}
 
-		// Begin playing random tracks
-		playNextTrack ();
+			// Begin playing random tracks
+			playNextTrack ();
+		});
+	}
+
+	$(function () {
+		// Register Events
+		$('audio').on ('pause', function () {
+			$('#btn-play i').removeClass ('fa-pause');
+			$('#btn-play i').addClass ('fa-play');
+		});
+
+		$('audio').on ('play', function () {
+			$('#btn-play i').removeClass ('fa-play');
+			$('#btn-play i').addClass ('fa-pause');
+		});
+
+		$('audio').on ('timeupdate', function () {
+			if (isNaN (this.duration))
+				return;
+
+			$('#time-current').text (formatTimecode (this.currentTime));
+			$('#time-remaining').text (formatTimecode (this.duration - this.currentTime));
+		});
+
+		$('audio').on ('ended', function () {
+			playNextTrack ();
+		});
+
+		$('#btn-play').click (function () {
+			if ($('audio').get (0).paused)
+				$('audio').trigger ('play');
+			else
+				$('audio').trigger ('pause');
+		});
+
+		$('#btn-next').click (function () {
+			playNextTrack ();
+		});
+
+		$('#btn-previous').click (function () {
+			playPreviousTrack ();
+		});
+
+		$('#select-playlist').on ('change', function () {
+			loadNewPlaylist ();
+		});
+
+		// Load current playlist
+		loadNewPlaylist ();
 	});
 </script>
 
@@ -120,11 +221,16 @@
 		border-spacing: 0;
 	}
 
-	table {
-		width: 100%;
+	body {
+		background-color: #183c63;
 	}
 
-	table td {
+	#tracks-table {
+		width: 100%;
+		margin-top: 18px;
+	}
+
+	#tracks-table td {
 		background-color: #183c63;
 		border: 1px solid #003366;
 		color: #FF9148;
@@ -134,23 +240,123 @@
 		cursor: pointer;
 	}
 
-	table tr.selected td {
+	#tracks-table tr.selected td {
 		background-color: #e5874a;
 		color: #183c63;
 	}
 
-	table tr:hover td {
+	#tracks-table tr:hover td {
 		background-color: #4e91ff;
 		color: #183c63;
+	}
+
+	.control-bar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 18px;
+		background: linear-gradient(to bottom, rgba(192,204,217,1) 0%, rgba(0,12,25,1) 100%);
+	}
+
+	.control-buttons {
+		width: 100%;
+		height: 100%;
+		border-spacing: 1px;
+		border-collapse: separate;
+	}
+
+	.control-buttons td {
+		font-family: Helvetica, Arial, sans-serif;
+		font-size: 7pt;
+		color: #FF9148;
+		border-width: 0px;
+		background: linear-gradient(to bottom, rgba(61,99,137,1) 0%, rgba(3,41,79,1) 100%);
+		text-align: center;
+		cursor: pointer;
+		vertical-align: middle;
+	}
+
+	.control-buttons td:hover {
+		color: #4e91ff;
+	}
+
+	.control-button {
+		width: 20px;
+	}
+
+	.control-volume {
+		width: 60px;
+		font-size: 9pt;
+	}
+
+	.control-playlist {
+		width: 80px;
+	}
+
+	.control-playlist select {
+		height: 16px;
+		font-family: Helvetica, Arial, sans-serif;
+		font-size: 7pt;
+		padding: 0;
+		color: #FF9148;
+		border: 0;
+		background: transparent;
+	}
+
+	.credits {
+		position: fixed;
+		bottom: 0;
+		right: 0;
+		width: 150px;
+		background-color: #000;
+		background-color: rgba(0,0,0,0.5);
+		color: #FF9148;
+		padding: 5px;
+		font-family: Helvetica, Arial, sans-serif;
+		font-size: 8pt;
+	}
+
+	.credits a {
+		color: #a96030;
+		font-family: Helvetica, Arial, sans-serif;
+		font-size: 8pt;
+		text-decoration: none;
+	}
+
+	#time-current, #time-remaining {
+		width: 60px;
 	}
 </style>
 </head>
 <body>
+	<div class='control-bar'>
+		<table class='control-buttons' cellpadding="0" cellspacing="0">
+			<tr>
+				<td id='btn-play' class='control-button'><i class="fa fa-play"></i></td>
+				<td id='btn-previous' class='control-button'><i class="fa fa-step-backward"></i></td>
+				<td id='btn-next' class='control-button'><i class="fa fa-step-forward"></i></td>
+				<td id='time-current'></td>
+				<td id='time-bar'>&nbsp;</td>
+				<td id='time-remaining'></td>
+				<td class='control-playlist'>
+					<select id='select-playlist'>
+						<option value='http://vip.aersia.net/roster.xml' selected='selected'>VIP</option>
+						<option value='http://vip.aersia.net/roster-mellow.xml'>Mellow</option>
+						<option value='http://vip.aersia.net/roster-source.xml'>Source</option>
+						<option value='http://vip.aersia.net/roster-exiled.xml'>Exiled</option>
+					</select>
+				</td>
+			</tr>
+		</table>
+	</div>
 
-<audio controls onended="playNextTrack ();"></audio>
+	<audio></audio>
 
-<table id='tracks-table' cellpadding="0" cellspacing="0">
-</table>
+	<table id='tracks-table' cellpadding="0" cellspacing="0"></table>
 
+	<div class='credits'>
+		<a href="http://aersia.net" target="_blank">playlist by Cats777@Aersia.net</a>
+	</div>
 </body>
 </html>

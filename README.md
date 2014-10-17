@@ -36,3 +36,5 @@ Compatibility
 =============
 
 This player should be compatible with all modern devices and browsers that support HTML5 and M4A (AAC) audio files.  If you run into any bugs, let me know!
+
+I have tested the current version on Firefox (Ubuntu), iPhone 5, and iPad 3.  On the latter two, the playlist doesn't play automatically the first time; just tap a track to begin.  Also, on the iPhone the player controls are incredibly tiny.  Both bugs will be fixed.

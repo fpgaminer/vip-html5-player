@@ -129,6 +129,13 @@
 		});
 	}
 
+	function playpause () {
+		if ($('audio').get (0).paused)
+			$('audio').trigger ('play');
+		else
+			$('audio').trigger ('pause');
+	}
+
 	$(function () {
 		// Register Events
 		$('audio').on ('pause', function () {
@@ -153,11 +160,13 @@
 			playNextTrack ();
 		});
 
-		$('#btn-play').click (function () {
-			if ($('audio').get (0).paused)
-				$('audio').trigger ('play');
-			else
-				$('audio').trigger ('pause');
+		$('#btn-play').click (playpause);
+
+		$(document).keypress (function (e) {
+			if (e.which == 32) {
+				e.preventDefault ();
+				playpause ();
+			}
 		});
 
 		$('#btn-next').click (function () {

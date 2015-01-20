@@ -175,9 +175,11 @@
 		});
 
 		$(document).on('mouseup.scrubber-track', function(e) {
-			$('audio').get(0).currentTime = (scrubp / 100) * $('audio').get(0).duration;
-			$(this).off('mousemove.scrubber-track');
-			is_dragging_scrubber = false;
+			if (is_dragging_scrubber) {
+				$('audio').get(0).currentTime = (scrubp / 100) * $('audio').get(0).duration;
+				$(this).off('mousemove.scrubber-track');
+				is_dragging_scrubber = false;
+			}
 		});
 
 		$('audio').on ('ended', function () {

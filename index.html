@@ -10,6 +10,9 @@
 	var g_previous_idx = 0;
 	var MAX_HISTORY = 10;
 
+	var scrubp = 0;
+	var is_dragging_scrubber = false;
+
 	function formatTimecode (seconds) {
 		seconds = Math.floor (seconds);
 		minutes = Math.floor (seconds / 60);
@@ -151,9 +154,30 @@
 		$('audio').on ('timeupdate', function () {
 			if (isNaN (this.duration))
 				return;
-
+			if (!is_dragging_scrubber)
+				$('#scrubber-progress').css('width', (this.currentTime / this.duration) * 100+'%');
 			$('#time-current').text (formatTimecode (this.currentTime));
 			$('#time-remaining').text (formatTimecode (this.duration - this.currentTime));
+		});
+
+		$('#scrubber-track').on('mousedown mouseup', function(e) {
+			is_dragging_scrubber = true;
+			var sc_w = $('#scrubber-track').outerWidth();
+			var p = ((e.pageX - $('#scrubber-track').offset().left) / sc_w) * 100;
+			$('#scrubber-progress').css('width', p+'%');
+			scrubp = p;
+			$(document).on('mousemove.scrubber-track', function(e) {
+				sc_w = $('#scrubber-track').outerWidth();
+				p = ((e.pageX - $('#scrubber-track').offset().left) / sc_w) * 100;
+				$('#scrubber-progress').css('width', p+'%');
+				scrubp = p;
+			});
+		});
+
+		$(document).on('mouseup.scrubber-track', function(e) {
+			$('audio').get(0).currentTime = (scrubp / 100) * $('audio').get(0).duration;
+			$(this).off('mousemove.scrubber-track');
+			is_dragging_scrubber = false;
 		});
 
 		$('audio').on ('ended', function () {
@@ -214,6 +238,7 @@
 	}
 	body {
 		line-height: 1;
+		-webkit-user-select: none;
 	}
 	ol, ul {
 		list-style: none;
@@ -338,6 +363,27 @@
 	#time-current, #time-remaining {
 		width: 60px;
 	}
+
+	#scrubber-track {
+		width: 100%;
+		height: 5px;
+		background: gray;
+	}
+	#scrubber-progress {
+		background: #FF9148;
+		height: 100%;
+	}
+	#scrubber {
+		position: relative;
+		right: -50%;
+		height: 10px;
+		width: 6px;
+		display: inline-block;
+		background: lightgrey;
+		-ms-transform: translate(-50%,-25%);
+		-webkit-transform: translate(-50%,-25%);
+		transform: translate(-50%,-25%);
+	}
 </style>
 </head>
 <body>
@@ -348,7 +394,7 @@
 				<td id='btn-previous' class='control-button'><i class="fa fa-step-backward"></i></td>
 				<td id='btn-next' class='control-button'><i class="fa fa-step-forward"></i></td>
 				<td id='time-current'></td>
-				<td id='time-bar'>&nbsp;</td>
+				<td id='time-bar'><div id="scrubber-track"><div id="scrubber-progress"><div id="scrubber"></div></div></div></td>
 				<td id='time-remaining'></td>
 				<td class='control-playlist'>
 					<select id='select-playlist'>

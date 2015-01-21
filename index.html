@@ -374,17 +374,18 @@
 	#scrubber-progress {
 		background: #FF9148;
 		height: 100%;
+		position: relative;
 	}
 	#scrubber {
-		position: relative;
-		right: -50%;
+		position: absolute;
+		right: 0;
 		height: 10px;
 		width: 6px;
 		display: inline-block;
 		background: lightgrey;
-		-ms-transform: translate(-50%,-25%);
-		-webkit-transform: translate(-50%,-25%);
-		transform: translate(-50%,-25%);
+		-ms-transform: translateY(-25%);
+		-webkit-transform: translateY(-25%);
+		transform: translateY(-25%);
 	}
 </style>
 </head>

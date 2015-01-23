@@ -24,7 +24,6 @@ I cloned the aesthetic of the original VIP player, so everything looks and feels
  
 **Missing**
  * Volume controls
- * Scrubber
 
 **New**
  * Next Track button goes to a random track, instead of next in the playlist.

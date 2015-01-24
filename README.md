@@ -24,6 +24,7 @@ I cloned the aesthetic of the original VIP player, so everything looks and feels
  
 **Missing**
  * Optimizing style and behavior of volume controls
+
 **New**
  * Next Track button goes to a random track, instead of next in the playlist.
  * Previous Track button goes to the track previously played, instead of the previous in the playlist.

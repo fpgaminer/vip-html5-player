@@ -165,7 +165,7 @@
 			$('#time-remaining').text (formatTimecode (this.duration - this.currentTime));
 		});
 
-		$('#scrubber-track').on('mousedown mouseup', function(e) {
+		$('#time-bar').on('mousedown mouseup', function(e) {
 			is_dragging_scrubber = true;
 			var sc_w = $('#scrubber-track').outerWidth();
 			var p = ((e.pageX - $('#scrubber-track').offset().left) / sc_w) * 100;
@@ -371,26 +371,50 @@
 		width: 60px;
 	}
 
+	#time-bar:hover #scrubber {
+		background: rgb(78,145,255);
+	}
+
 	#scrubber-track {
 		width: 100%;
 		height: 5px;
-		background: gray;
+		background: #7f6157;
 	}
+
 	#scrubber-progress {
 		background: #FF9148;
 		height: 100%;
 		position: relative;
 	}
+
 	#scrubber {
 		position: absolute;
 		right: 0;
-		height: 10px;
-		width: 6px;
+		height: 8px;
+		width: 3px;
 		display: inline-block;
-		background: lightgrey;
+		border: 1px solid #7f6157;
+		background: #FF9148;
 		-ms-transform: translateY(-25%);
 		-webkit-transform: translateY(-25%);
 		transform: translateY(-25%);
+	}
+
+	::-webkit-scrollbar {
+		width: 8px;
+	}
+ 
+	::-webkit-scrollbar-track {
+		background-color: #7f6157;
+	}
+ 
+	::-webkit-scrollbar-thumb {
+		background-color: #FF9148;
+		border-radius: 2px;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		background-color: rgb(78,145,255);
 	}
 </style>
 </head>

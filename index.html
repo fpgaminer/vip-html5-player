@@ -30,7 +30,8 @@
 
 	function parsePlaylist (playlistXML) {
 		// roster.xml from VIP is currently broken (2014.10.15); this fixes it before parsing
-		playlistXML = playlistXML.replace (/&/g, '&amp;');
+		// (2015.01.23); all playlists seem to be fixed now; no longer needed.
+		//playlistXML = playlistXML.replace (/&/g, '&amp;');
 
 		playlistXML = $.parseXML (playlistXML);
 		
@@ -149,6 +150,10 @@
 		$('audio').on ('play', function () {
 			$('#btn-play i').removeClass ('fa-play');
 			$('#btn-play i').addClass ('fa-pause');
+		});
+
+		$('audio').on ('error', function () {
+			playNextTrack ();
 		});
 
 		$('audio').on ('timeupdate', function () {

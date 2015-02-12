@@ -212,15 +212,23 @@
 		});
 
 		$('#select-playlist').on ('change', function () {
+			localStorage['playlist'] = $('#select-playlist').val ();
 			loadNewPlaylist ();
 		});
+
+		/* Load settings */
+		if (localStorage.getItem ('volume') !== null)
+			$('audio').get (0).volume = localStorage.getItem('volume');
+
+		if (localStorage.getItem ('playlist') !== null)
+			$('#select-playlist').val (localStorage.getItem ('playlist'));
 
 		$('#volume-slider').slider({
 			orientation: "vertical",
 			range: "min",
 			min: 0,
 			max: 100,
-			value: 100,
+			value: $('audio').get (0).volume * 100,
 			slide: function(event, ui) {
 				//change volume here
 				$('audio').get(0).volume = (ui.value / 100);
@@ -233,12 +241,15 @@
 				else {
 					$('#btn-volume i').removeClass($('#btn-volume i').attr('class').split(' ')[1]).addClass('fa-volume-off');
 				}
+
+				localStorage['volume'] = $('audio').get (0).volume;
 			}
 		});
 
 		$('#btn-volume').on('click', function() {
 			$('#volume-slider').slideToggle(200);
 		});
+
 		// Load current playlist
 		loadNewPlaylist ();
 	});

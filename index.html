@@ -65,10 +65,10 @@
 		playTrack (g_previous[g_previous_idx]);
 	}
 
-	function playNextTrack () {
+	function playNextTrack (clicked) {
 		if (g_playlist === null)
 			return;
-		if (!g_looping) {
+		if (!g_looping || clicked) {
 			if (g_previous_idx >= (g_previous.length - 1)) {
 				g_previous.push (Math.floor (Math.random () * g_playlist.length));
 				g_previous_idx = g_previous.length - 1;
@@ -213,7 +213,7 @@
 		});
 
 		$('#btn-next').click (function () {
-			playNextTrack ();
+			playNextTrack (true);
 		});
 
 		$('#btn-previous').click (function () {

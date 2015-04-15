@@ -9,6 +9,7 @@
 	var g_playlist = null;
 	var g_previous = [];
 	var g_previous_idx = 0;
+	var g_looping = false;
 	var MAX_HISTORY = 10;
 
 	var scrubp = 0;
@@ -67,19 +68,21 @@
 	function playNextTrack () {
 		if (g_playlist === null)
 			return;
+		if (!g_looping) {
+			if (g_previous_idx >= (g_previous.length - 1)) {
+				g_previous.push (Math.floor (Math.random () * g_playlist.length));
+				g_previous_idx = g_previous.length - 1;
+			}
+			else {
+				g_previous_idx += 1;
+			}
 
-		if (g_previous_idx >= (g_previous.length - 1)) {
-			g_previous.push (Math.floor (Math.random () * g_playlist.length));
-			g_previous_idx = g_previous.length - 1;
-		}
-		else {
-			g_previous_idx += 1;
+			while (g_previous.length > MAX_HISTORY) {
+				g_previous.shift ();
+				g_previous_idx -= 1;
+			}
 		}
 
-		while (g_previous.length > MAX_HISTORY) {
-			g_previous.shift ();
-			g_previous_idx -= 1;
-		}
 
 		playTrack (g_previous[g_previous_idx]);
 	}
@@ -139,6 +142,12 @@
 			$('audio').trigger ('play');
 		else
 			$('audio').trigger ('pause');
+	}
+
+	function toggleLooping () {
+		g_looping = !g_looping;
+		$('#btn-loop i').toggleClass('fa-times', g_looping);
+		$('#btn-loop i').toggleClass('fa-repeat', !g_looping);
 	}
 
 	$(function () {
@@ -209,6 +218,10 @@
 
 		$('#btn-previous').click (function () {
 			playPreviousTrack ();
+		});
+
+		$('#btn-loop').click (function () {
+			toggleLooping ();
 		});
 
 		$('#select-playlist').on ('change', function () {
@@ -484,6 +497,7 @@
 				<td id='btn-play' class='control-button'><i class="fa fa-play"></i></td>
 				<td id='btn-previous' class='control-button'><i class="fa fa-step-backward"></i></td>
 				<td id='btn-next' class='control-button'><i class="fa fa-step-forward"></i></td>
+				<td id='btn-loop' class='control-button'><i class="fa fa-repeat"></i></td>
 				<td id='time-current'></td>
 				<td id='time-bar'><div id="scrubber-track"><div id="scrubber-progress"><div id="scrubber"></div></div></div></td>
 				<td id='time-remaining'></td>

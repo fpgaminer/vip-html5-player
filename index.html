@@ -81,10 +81,9 @@
 				g_previous.shift ();
 				g_previous_idx -= 1;
 			}
+
+			playTrack (g_previous[g_previous_idx]);
 		}
-
-
-		playTrack (g_previous[g_previous_idx]);
 	}
 
 
@@ -146,6 +145,7 @@
 
 	function toggleLooping () {
 		g_looping = !g_looping;
+		$('audio').attr ('loop', g_looping);
 		$('#btn-loop i').toggleClass('fa-times', g_looping);
 		$('#btn-loop i').toggleClass('fa-repeat', !g_looping);
 	}

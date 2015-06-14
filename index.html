@@ -66,25 +66,24 @@
 		playTrack (g_previous[g_previous_idx]);
 	}
 
-	function playNextTrack (clicked) {
+	function playNextTrack () {
 		if (g_playlist === null)
 			return;
-		if (!g_looping || clicked) {
-			if (g_previous_idx >= (g_previous.length - 1)) {
-				g_previous.push (Math.floor (Math.random () * g_playlist.length));
-				g_previous_idx = g_previous.length - 1;
-			}
-			else {
-				g_previous_idx += 1;
-			}
 
-			while (g_previous.length > MAX_HISTORY) {
-				g_previous.shift ();
-				g_previous_idx -= 1;
-			}
-
-			playTrack (g_previous[g_previous_idx]);
+		if (g_previous_idx >= (g_previous.length - 1)) {
+			g_previous.push (Math.floor (Math.random () * g_playlist.length));
+			g_previous_idx = g_previous.length - 1;
 		}
+		else {
+			g_previous_idx += 1;
+		}
+
+		while (g_previous.length > MAX_HISTORY) {
+			g_previous.shift ();
+			g_previous_idx -= 1;
+		}
+
+		playTrack (g_previous[g_previous_idx]);
 	}
 
 
@@ -201,7 +200,8 @@
 		});
 
 		$('audio').on ('ended', function () {
-			playNextTrack ();
+			if (!g_looping)
+				playNextTrack ();
 		});
 
 		$('#btn-play').click (playpause);

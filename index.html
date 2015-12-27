@@ -31,6 +31,7 @@
 		return minutes + ":" + seconds;
 	}
 
+	// creates an id for a track used in the location hash
 	function createTrackId (track) {
 		var tackId =  '#' + track.creator + ' - ' + track.title
 		return tackId.replace(/ /g, '_'); // replace all strings

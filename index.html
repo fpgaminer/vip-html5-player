@@ -31,6 +31,11 @@
 		return minutes + ":" + seconds;
 	}
 
+	function createTrackId (track) {
+		var tackId =  '#' + track.creator + ' - ' + track.title
+		return tackId.replace(/ /g, '_'); // replace all strings
+	}
+
 	function parsePlaylist (playlistXML) {
 		// roster.xml from VIP is currently broken (2014.10.15); this fixes it before parsing
 		// (2015.01.23); all playlists seem to be fixed now; no longer needed.
@@ -90,10 +95,11 @@
 	function playTrack (trackid) {
 		var track = g_playlist[trackid];
 
-		$('#tracks-table tr').removeClass ('selected');
-		var trackelem = $('#tracks-table tr').eq (trackid);
+		$('#tracks-table .selected').removeClass ('selected');
+		var trackelem = $('#tracks-table div').eq (trackid);
 		trackelem.addClass ('selected');
 
+		window.location.hash = createTrackId(track);
 		$('audio').attr ('src', track.location);
 		$('audio').trigger ('play');
 
@@ -106,7 +112,7 @@
 		var playlistURL = $('#select-playlist').val ();
 
 		// Clear
-		$('#tracks-table tr').remove ();
+		$('#tracks-table div').remove ();
 		g_previous = [];
 		g_previous_idx = 0;
 		g_playlist = null;
@@ -119,9 +125,9 @@
 			for (var i = 0; i < g_playlist.length; ++i) {
 				var track = g_playlist[i];
 
-				var row = $('<tr>').append (
-					$('<td>').text (track.creator + ' - ' + track.title)
-				);
+				var row = $('<div>');
+				row.text (track.creator + ' - ' + track.title);
+				row.attr('id', createTrackId(track));
 			
 				row.appendTo ('#tracks-table');
 				(function (i) {
@@ -131,8 +137,17 @@
 				}) (i);
 			}
 
-			// Begin playing random tracks
-			playNextTrack ();
+			// check if hash is set, if not, begin playing random tracks
+			if(window.location.hash != '') {
+				var element = document.getElementById(window.location.hash);
+				if(element){
+					element.click();
+				} else {
+					playNextTrack ();
+				}
+			} else {
+				playNextTrack ();
+			}
 		});
 	}
 
@@ -297,7 +312,6 @@
 	}
 	body {
 		line-height: 1;
-		-webkit-user-select: none;
 	}
 	ol, ul {
 		list-style: none;
@@ -310,10 +324,6 @@
 		content: '';
 		content: none;
 	}
-	table {
-		border-collapse: collapse;
-		border-spacing: 0;
-	}
 
 	body {
 		background-color: #183c63;
@@ -324,7 +334,7 @@
 		margin-top: 18px;
 	}
 
-	#tracks-table td {
+	#tracks-table div {
 		background-color: #183c63;
 		border: 1px solid #003366;
 		color: #FF9148;
@@ -334,12 +344,12 @@
 		cursor: pointer;
 	}
 
-	#tracks-table tr.selected td {
+	#tracks-table div.selected {
 		background-color: #e5874a;
 		color: #183c63;
 	}
 
-	#tracks-table tr:hover td {
+	#tracks-table div:hover {
 		background-color: #4e91ff;
 		color: #183c63;
 	}
@@ -508,7 +518,7 @@
 		#tracks-table {
 			margin-top: 70px;
 		}
-		#tracks-table td {
+		#tracks-table div {
 			font-size: 11pt;
 		}
 	}
@@ -542,7 +552,7 @@
 	
 	<audio></audio>
 
-	<table id='tracks-table' cellpadding="0" cellspacing="0"></table>
+	<div id='tracks-table'></div>
 
 	<div class='credits'>
 		<a href="http://aersia.net" target="_blank">playlist by Cats777</a>

@@ -34,17 +34,10 @@
 	// creates an id for a track used in the location hash
 	function createTrackId (track) {
 		var tackId =  '#' + track.creator + ' - ' + track.title
-		return tackId.replace(/ /g, '_'); // replace all strings
+		return tackId.replace(/ /g, '_'); // replace all spaces
 	}
 
 	function parsePlaylist (playlistXML) {
-		// roster.xml from VIP is currently broken (2014.10.15); this fixes it before parsing
-		// (2015.01.23); all playlists seem to be fixed now; no longer needed.
-		//playlistXML = playlistXML.replace (/&/g, '&amp;');
-
-		playlistXML = $.parseXML (playlistXML);
-		
-
 		result = [];
 
 		$(playlistXML).find ('playlist trackList > track').each (function () {
@@ -118,9 +111,11 @@
 		g_previous_idx = 0;
 		g_playlist = null;
 
-		$.getJSON ('http://whateverorigin.org/get?url=' + encodeURIComponent (playlistURL) + '&callback=?', function (data) {
+		$.ajax({
+            url: playlistURL,
+            success: function (data) {
 			// Parse track list
-			g_playlist = parsePlaylist (data.contents);
+			g_playlist = parsePlaylist (data);
 
 			// Build HTML table for track listing
 			for (var i = 0; i < g_playlist.length; ++i) {
@@ -149,8 +144,8 @@
 			} else {
 				playNextTrack ();
 			}
-		});
-	}
+		}});
+	};
 
 	function playpause () {
 		if ($('audio').get (0).paused)

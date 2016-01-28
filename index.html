@@ -31,7 +31,7 @@
 		return minutes + ":" + seconds;
 	}
 
-	// creates an id for a track used in the location hash
+	// Creates an id for a track used in the location hash
 	function createTrackId (track) {
 		var tackId =  '#' + track.creator + ' - ' + track.title
 		return tackId.replace(/ /g, '_'); // replace all spaces
@@ -93,7 +93,7 @@
 		var trackelem = $('#tracks-table div').eq (trackid);
 		trackelem.addClass ('selected');
 
-		window.location.hash = createTrackId(track);
+		window.location.hash = createTrackId (track);
 		$('audio').attr ('src', track.location);
 		$('audio').trigger ('play');
 
@@ -123,7 +123,7 @@
 
 					var row = $('<div>');
 					row.text (track.creator + ' - ' + track.title);
-					row.attr('id', createTrackId(track));
+					row.attr ('id', createTrackId (track));
 
 					row.appendTo ('#tracks-table');
 					(function (i) {

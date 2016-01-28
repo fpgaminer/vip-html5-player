@@ -28,7 +28,7 @@ I cloned the aesthetic of the original VIP player, so everything looks and feels
 **New**
  * Next Track button goes to a random track, instead of next in the playlist.
  * Previous Track button goes to the track previously played, instead of the previous in the playlist.
- * Playlist Selection dropdown.  Easily switch between the different VIP playlists (VIP, Mellow, Source, Exiled).
+ * Playlist Selection dropdown.  Easily switch between the different VIP playlists (VIP, Mellow, Source, Exiled, WAP, CPP).
 
 
 Compatibility

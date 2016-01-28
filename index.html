@@ -16,6 +16,17 @@
 	var scrubp = 0;
 	var is_dragging_scrubber = false;
 
+	var PLAYLISTS = {
+		'VIP': 'http://vip.aersia.net/roster.xml',
+		'Mellow': 'http://vip.aersia.net/roster-mellow.xml',
+		'Source': 'http://vip.aersia.net/roster-source.xml',
+		'Exiled': 'http://vip.aersia.net/roster-exiled.xml',
+		'WAP': 'http://wap.aersia.net/roster.xml',
+		'CPP': 'http://cpp.aersia.net/roster.xml',
+	};
+
+	var DEFAULT_PLAYLIST = 'VIP';
+
 	function formatTimecode (seconds) {
 		seconds = Math.floor (seconds);
 		minutes = Math.floor (seconds / 60);
@@ -31,14 +42,39 @@
 		return minutes + ":" + seconds;
 	}
 
+	// Creates an id for a track used in the location hash
+	function createTrackId (track) {
+		var playlist = $('#select-playlist').val ();
+		var track = track.creator + ' - ' + track.title;
+		track = track.replace(/[^a-zA-Z0-9-]/g, '_');
+
+		return encodeURIComponent (playlist) + ':' + track;
+	}
+
+	function parseTrackId (trackId) {
+		var pieces = trackId.split (':');
+		var playlist = '';
+		var track = '';
+
+		if (pieces.length < 2) {
+			playlist = decodeURIComponent (trackId);
+			track = '';
+		} else {
+			pieces.pop ();
+			playlist = decodeURIComponent (pieces.join (':'));
+			track = trackId;
+		}
+
+		if (!(playlist in PLAYLISTS))
+			return null;
+
+		return {
+			playlist: playlist,
+			track: track
+		};
+	}
+
 	function parsePlaylist (playlistXML) {
-		// roster.xml from VIP is currently broken (2014.10.15); this fixes it before parsing
-		// (2015.01.23); all playlists seem to be fixed now; no longer needed.
-		//playlistXML = playlistXML.replace (/&/g, '&amp;');
-
-		playlistXML = $.parseXML (playlistXML);
-		
-
 		result = [];
 
 		$(playlistXML).find ('playlist trackList > track').each (function () {
@@ -90,10 +126,11 @@
 	function playTrack (trackid) {
 		var track = g_playlist[trackid];
 
-		$('#tracks-table tr').removeClass ('selected');
-		var trackelem = $('#tracks-table tr').eq (trackid);
+		$('#tracks-table .selected').removeClass ('selected');
+		var trackelem = $('#tracks-table div').eq (trackid);
 		trackelem.addClass ('selected');
 
+		window.location.hash = createTrackId (track);
 		$('audio').attr ('src', track.location);
 		$('audio').trigger ('play');
 
@@ -102,39 +139,54 @@
 		}, 1000);
 	}
 
-	function loadNewPlaylist () {
-		var playlistURL = $('#select-playlist').val ();
+	function loadNewPlaylist (playlist, track) {
+		var playlistURL = PLAYLISTS[playlist];
+		var selected_track = track;
+
+		localStorage['playlist'] = playlist;
+		$('#select-playlist').val (playlist);
 
 		// Clear
-		$('#tracks-table tr').remove ();
+		$('#tracks-table div').remove ();
 		g_previous = [];
 		g_previous_idx = 0;
 		g_playlist = null;
 
-		$.getJSON ('http://whateverorigin.org/get?url=' + encodeURIComponent (playlistURL) + '&callback=?', function (data) {
-			// Parse track list
-			g_playlist = parsePlaylist (data.contents);
+		$.ajax({
+			url: playlistURL,
+			success: function (data) {
+				// Parse track list
+				g_playlist = parsePlaylist (data);
 
-			// Build HTML table for track listing
-			for (var i = 0; i < g_playlist.length; ++i) {
-				var track = g_playlist[i];
+				// Build HTML table for track listing
+				for (var i = 0; i < g_playlist.length; ++i) {
+					var track = g_playlist[i];
 
-				var row = $('<tr>').append (
-					$('<td>').text (track.creator + ' - ' + track.title)
-				);
-			
-				row.appendTo ('#tracks-table');
-				(function (i) {
-					row.click (function () {
-						playTrack (i);
-					});
-				}) (i);
+					var row = $('<div>');
+					row.text (track.creator + ' - ' + track.title);
+					row.attr ('id', createTrackId (track));
+
+					row.appendTo ('#tracks-table');
+					(function (i) {
+						row.click (function () {
+							playTrack (i);
+						});
+					}) (i);
+				}
+
+				// Select specified track if possible, or play random track if not.
+				var elements = $('#tracks-table div').filter (function (idx, elem) {
+					return elem.id == selected_track;
+				});
+
+				if (elements.length > 0) {
+					elements[0].click ();
+				} else {
+					playNextTrack ();
+				}
 			}
-
-			// Begin playing random tracks
-			playNextTrack ();
 		});
-	}
+	};
 
 	function playpause () {
 		if ($('audio').get (0).paused)
@@ -148,6 +200,16 @@
 		$('audio').attr ('loop', g_looping);
 		$('#btn-loop i').toggleClass('fa-times', g_looping);
 		$('#btn-loop i').toggleClass('fa-repeat', !g_looping);
+	}
+
+	function populatePlaylistOptions () {
+		for (var name in PLAYLISTS) {
+			var option = $("<option>");
+			option.val (name);
+			option.text (name);
+
+			$('#select-playlist').append (option);
+		}
 	}
 
 	$(function () {
@@ -226,16 +288,9 @@
 		});
 
 		$('#select-playlist').on ('change', function () {
-			localStorage['playlist'] = $('#select-playlist').val ();
-			loadNewPlaylist ();
+			var playlist = $('#select-playlist').val ();
+			loadNewPlaylist (playlist, '');
 		});
-
-		/* Load settings */
-		if (localStorage.getItem ('volume') !== null)
-			$('audio').get (0).volume = localStorage.getItem('volume');
-
-		if (localStorage.getItem ('playlist') !== null)
-			$('#select-playlist').val (localStorage.getItem ('playlist'));
 
 		$('#volume-slider').slider({
 			orientation: "vertical",
@@ -264,8 +319,31 @@
 			$('#volume-slider').slideToggle(200);
 		});
 
-		// Load current playlist
-		loadNewPlaylist ();
+		populatePlaylistOptions ();
+
+		// Default playlist, random track
+		var playlist = DEFAULT_PLAYLIST;
+		var track = '';
+
+		/* Load settings */
+		if (localStorage.getItem ('volume') !== null)
+			$('audio').get (0).volume = localStorage.getItem('volume');
+
+		if (localStorage.getItem ('playlist') !== null) {
+			if (localStorage.getItem ('playlist') in PLAYLISTS)
+				playlist = localStorage.getItem ('playlist');
+		}
+
+		// If hash is set, override playlist and track
+		var url_track = parseTrackId (window.location.hash.substr (1));
+
+		if (url_track !== null) {
+			playlist = url_track.playlist;
+			track = url_track.track;
+		}
+
+		// Load playlist and track
+		loadNewPlaylist (playlist, track);
 	});
 </script>
 
@@ -297,7 +375,6 @@
 	}
 	body {
 		line-height: 1;
-		-webkit-user-select: none;
 	}
 	ol, ul {
 		list-style: none;
@@ -310,10 +387,6 @@
 		content: '';
 		content: none;
 	}
-	table {
-		border-collapse: collapse;
-		border-spacing: 0;
-	}
 
 	body {
 		background-color: #183c63;
@@ -324,7 +397,7 @@
 		margin-top: 18px;
 	}
 
-	#tracks-table td {
+	#tracks-table div {
 		background-color: #183c63;
 		border: 1px solid #003366;
 		color: #FF9148;
@@ -334,12 +407,12 @@
 		cursor: pointer;
 	}
 
-	#tracks-table tr.selected td {
+	#tracks-table div.selected {
 		background-color: #e5874a;
 		color: #183c63;
 	}
 
-	#tracks-table tr:hover td {
+	#tracks-table div:hover {
 		background-color: #4e91ff;
 		color: #183c63;
 	}
@@ -508,7 +581,7 @@
 		#tracks-table {
 			margin-top: 70px;
 		}
-		#tracks-table td {
+		#tracks-table div {
 			font-size: 11pt;
 		}
 	}
@@ -527,14 +600,7 @@
 				<td id='time-remaining'></td>
 				<td id='btn-volume' class='control-button'><i class="fa fa-volume-up"></i><div id="volume-slider"></div></td>
 				<td class='control-playlist'>
-					<select id='select-playlist'>
-						<option value='http://vip.aersia.net/roster.xml' selected='selected'>VIP</option>
-						<option value='http://vip.aersia.net/roster-mellow.xml'>Mellow</option>
-						<option value='http://vip.aersia.net/roster-source.xml'>Source</option>
-						<option value='http://vip.aersia.net/roster-exiled.xml'>Exiled</option>
-						<option value='http://wap.aersia.net/roster.xml'>WAP</option>
-						<option value='http://cpp.aersia.net/roster.xml'>CPP</option>
-					</select>
+					<select id='select-playlist'></select>
 				</td>
 			</tr>
 		</table>
@@ -542,7 +608,7 @@
 	
 	<audio></audio>
 
-	<table id='tracks-table' cellpadding="0" cellspacing="0"></table>
+	<div id='tracks-table'></div>
 
 	<div class='credits'>
 		<a href="http://aersia.net" target="_blank">playlist by Cats777</a>

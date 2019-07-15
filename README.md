@@ -1,11 +1,13 @@
 Aersia Playlist - HTML5 Player
+======================================
+
 
 I modified the amazing vip-html5-player and changed the design to a dracula like theme. The web requests are using now https.
 
-==========================================================
+---------------------------------------------------------------------
 
 "Vidya Intarweb Playlist" HTML5 Player
-======================================
+================
 
 ["Vidya Intarweb Playlist"](http://www.aersia.net/threads/vip-and-wap-faqs.8/) is a fantastic video game playlist maintained by Cats777 over at [Aersia.net](http://www.aersia.net).  The VIP has been one of my main sources of background music while working.
 

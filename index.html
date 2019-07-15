@@ -17,15 +17,15 @@
 	var is_dragging_scrubber = false;
 
 	var PLAYLISTS = {
-		'VIP': 'https://vip.aersia.net/roster.xml',
-		'Mellow': 'https://vip.aersia.net/roster-mellow.xml',
-		'Source': 'https://vip.aersia.net/roster-source.xml',
+		'Source': 'https://vip.aersia.net/roster-source.xml',		
+		'Mellow': 'https://vip.aersia.net/roster-mellow.xml',		
 		'Exiled': 'https://vip.aersia.net/roster-exiled.xml',
+		'VIP': 'https://vip.aersia.net/roster.xml',
 		'WAP': 'https://wap.aersia.net/roster.xml',
-		'CPP': 'https://cpp.aersia.net/roster.xml',
+		'CPP': 'https://cpp.aersia.net/roster.xml'
 	};
 
-	var DEFAULT_PLAYLIST = 'VIP';
+	var DEFAULT_PLAYLIST = 'Source';
 
 	function formatTimecode (seconds) {
 		seconds = Math.floor (seconds);
@@ -389,7 +389,7 @@
 	}
 
 	body {
-		background-color: #183c63;
+		background-color: #282a36;
 	}
 
 	#tracks-table {
@@ -398,9 +398,9 @@
 	}
 
 	#tracks-table div {
-		background-color: #183c63;
-		border: 1px solid #003366;
-		color: #FF9148;
+		background-color: #282a36;
+		border: 1px solid #44475a;
+		color: #f8f8f2;
 		padding: 5px;
 		font-family: Helvetica, Arial, sans-serif;
 		font-size: 8pt;
@@ -408,13 +408,13 @@
 	}
 
 	#tracks-table div.selected {
-		background-color: #e5874a;
-		color: #183c63;
+		background-color: #44475a;
+		color: #8be9fd;
 	}
 
 	#tracks-table div:hover {
-		background-color: #4e91ff;
-		color: #183c63;
+		background-color: #44475a;
+		color: #f8f8f2;
 	}
 
 	.control-bar {
@@ -436,9 +436,9 @@
 	.control-buttons td {
 		font-family: Helvetica, Arial, sans-serif;
 		font-size: 7pt;
-		color: #FF9148;
+		color: #f8f8f2;
 		border-width: 0px;
-		background: linear-gradient(to bottom, rgba(61,99,137,1) 0%, rgba(3,41,79,1) 100%);
+		background:#282a36;
 		text-align: center;
 		cursor: pointer;
 		vertical-align: middle;
@@ -459,6 +459,7 @@
 
 	.control-playlist {
 		width: 80px;
+		background: transparent;
 	}
 
 	.control-playlist select {
@@ -466,9 +467,9 @@
 		font-family: Helvetica, Arial, sans-serif;
 		font-size: 7pt;
 		padding: 0;
-		color: #FF9148;
+		color: #f8f8f2;
 		border: 0;
-		background: transparent;
+		background: #282a36;
 	}
 
 	.credits {
@@ -478,7 +479,7 @@
 		width: 100px;
 		background-color: #000;
 		background-color: rgba(0,0,0,0.5);
-		color: #FF9148;
+		color: #f8f8f2;
 		padding: 5px;
 		font-family: Helvetica, Arial, sans-serif;
 		font-size: 8pt;
@@ -486,7 +487,7 @@
 	}
 
 	.credits a {
-		color: #a96030;
+		color: #ff5555;
 		font-family: Helvetica, Arial, sans-serif;
 		font-size: 8pt;
 		text-decoration: none;
@@ -497,7 +498,7 @@
 	}
 
 	#time-bar:hover #scrubber {
-		background: rgb(78,145,255);
+		background: #44475a;
 	}
 
 	#scrubber-track {
@@ -507,7 +508,7 @@
 	}
 
 	#scrubber-progress {
-		background: #FF9148;
+		background: #f8f8f2;
 		height: 100%;
 		position: relative;
 	}
@@ -519,7 +520,7 @@
 		width: 3px;
 		display: inline-block;
 		border: 1px solid #7f6157;
-		background: #FF9148;
+		background: #282a36;
 		-ms-transform: translateY(-25%);
 		-webkit-transform: translateY(-25%);
 		transform: translateY(-25%);
@@ -534,7 +535,7 @@
 	}
  
 	::-webkit-scrollbar-thumb {
-		background-color: #FF9148;
+		background-color: #f8f8f2;
 		border-radius: 2px;
 	}
 
@@ -554,7 +555,7 @@
 		padding: 0 5px;
 	}
 	.ui-slider-range-min {
-		background-color: #FF9148;
+		background-color: #f8f8f2;
 		position: absolute;
 		width: 8px;
 		left: 0;

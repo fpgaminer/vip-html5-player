@@ -2,7 +2,7 @@ Aersia Playlist - HTML5 Player
 ======================================
 
 
-I modified the amazing vip-html5-player and changed the design to a dracula like theme. The web requests are using now https.
+I modified the amazing vip-html5-player and changed the design to a dracula like theme. The web requests are using now https. The default playlist is now Source.
 
 ---------------------------------------------------------------------
 

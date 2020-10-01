@@ -31,7 +31,7 @@ I cloned the aesthetic of the original VIP player, so everything looks and feels
  * Playlist Selection dropdown.  Easily switch between the different VIP playlists (VIP, Mellow, Source, Exiled, WAP, CPP).
 
 
-Compatibility
+**Compatibility**
 =============
 
 This player should be compatible with all modern devices and browsers that support HTML5 and M4A (AAC) audio files.  If you run into any bugs, let me know!
